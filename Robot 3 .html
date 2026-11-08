@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robot 3 Controller Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #151c2c;
+      --primary: #00f2fe;
+      --accent: #4facfe;
+      --text-main: #f0f4f8;
+      --btn-bg: #222d42;
+      --btn-active: #00f2fe;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .dashboard-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 10px;
+    }
+
+    .side-bt-btn {
+      background: linear-gradient(145deg, #182236, #0e1524);
+      border: 2px solid #2a3854;
+      color: #7a8b9e;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .side-bt-btn.disconnect-active {
+      background: linear-gradient(145deg, #ff416c, #ff4b2b);
+      color: #fff;
+      border-color: #ff4b2b;
+      box-shadow: 0 0 20px rgba(255, 65, 108, 0.6);
+    }
+
+    .side-bt-btn.connect-active {
+      background: linear-gradient(145deg, #0072ff, #00c6ff);
+      color: #fff;
+      border-color: #00f2fe;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+    }
+
+    .side-bt-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .gamepad-container {
+      position: relative;
+      background: linear-gradient(145deg, #182236, #0e1524);
+      border: 3px solid #2a3854;
+      border-radius: 40px;
+      padding: 40px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
+                  inset 0 2px 3px rgba(255, 255, 255, 0.1);
+      gap: 20px;
+    }
+
+    .gamepad-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffe600;
+      text-shadow: 0 0 10px #ffd700, 0 0 20px #ffaa00, 0 0 35px #ff6600, 0 0 50px #ff4500;
+      margin-bottom: 15px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    .glowing-brand {
+      font-size: 16px;
+      font-weight: bold;
+      color: #00f2fe;
+      text-shadow: 0 0 8px #00f2fe, 0 0 15px #00f2fe, 0 0 25px #0072ff;
+      margin-top: 12px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      align-items: flex-start;
+      justify-content: center;
+      width: 140px;
+    }
+
+    .btn-wrapper {
+      display: flex;
+      align-items: center;
+      flex-direction: row-reverse;
+      gap: 12px;
+    }
+
+    .action-btn {
+      width: 75px;
+      height: 75px;
+      background: linear-gradient(145deg, #25334e, #1a2438);
+      border: 2px solid #3b4d70;
+      border-radius: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .action-btn:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+    }
+
+    .action-btn:active, .action-btn.active {
+      transform: scale(0.92);
+      background: var(--btn-active);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+    }
+
+    .action-btn:active svg, .action-btn.active svg {
+      stroke: #000;
+      fill: #000;
+    }
+
+    .btn-label-outside {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--primary);
+      text-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+    }
+
+    .center-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .screen {
+      width: 100%;
+      max-width: 320px;
+      height: 190px;
+      background-color: #050a12;
+      border: 3px solid #1f2e48;
+      border-radius: 15px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: inset 0 0 15px rgba(0, 242, 254, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .status-text {
+      font-size: 13px;
+      color: #7a8b9e;
+      text-align: center;
+    }
+
+    .command-display {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00f2fe;
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+      min-height: 35px;
+      text-align: center;
+    }
+
+    .right-panel {
+      width: 200px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dpad-svg {
+      width: 190px;
+      height: 190px;
+      filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.5));
+    }
+
+    .dpad-segment {
+      fill: #1e293b;
+      stroke: #0f172a;
+      stroke-width: 3px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .dpad-segment:hover {
+      fill: #334155;
+    }
+
+    .dpad-group:active .dpad-segment, 
+    .dpad-group.active .dpad-segment {
+      fill: #00f2fe;
+    }
+
+    .arrow-icon {
+      fill: #ffffff;
+      pointer-events: none;
+      transition: fill 0.15s ease;
+    }
+
+    .dpad-group:active .arrow-icon,
+    .dpad-group.active .arrow-icon {
+      fill: #000000;
+    }
+
+    .center-circle {
+      fill: #0f172a;
+      stroke: #334155;
+      stroke-width: 3px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-wrapper">
+    
+    <div class="top-controls">
+      <button id="btn-connect" class="side-bt-btn" onclick="connectBT()">
+        CONNECT BLUETOOTH
+      </button>
+
+      <button id="btn-disconnect" class="side-bt-btn" onclick="disconnectBT()">
+        DISCONNECT
+      </button>
+    </div>
+
+    <div class="gamepad-container">
+      
+      <div class="left-panel">
+        <div class="btn-wrapper">
+          <button class="action-btn" id="btn-square" onclick="move('stop')">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5">
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+            </svg>
+          </button>
+          <span class="btn-label-outside">A</span>
+        </div>
+
+        <div class="btn-wrapper">
+          <button class="action-btn" id="btn-triangle" onclick="customActionB()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" style="transform: rotate(90deg);">
+              <polygon points="12,4 22,20 2,20" />
+            </svg>
+          </button>
+          <span class="btn-label-outside">B</span>
+        </div>
+      </div>
+
+      <div class="center-panel">
+        <div class="gamepad-title">مدارس السمو</div>
+        <div class="screen">
+          <div class="screen-body">
+            <div class="status-text" id="status">غير متصل</div>
+            <div class="command-display" id="cmd-output">READY</div>
+          </div>
+        </div>
+        <div class="glowing-brand">ROBOT 3</div>
+      </div>
+
+      <div class="right-panel">
+        <svg class="dpad-svg" viewBox="0 0 200 200">
+          <g class="dpad-group" id="btn-up" onclick="move('forward')">
+            <path class="dpad-segment" d="M 29.29 29.29 A 100 100 0 0 1 170.71 29.29 L 135.36 64.64 A 50 50 0 0 0 64.64 64.64 Z" />
+            <polygon class="arrow-icon" points="100,20 114,40 86,40" />
+          </g>
+
+          <g class="dpad-group" id="btn-right" onclick="move('right')">
+            <path class="dpad-segment" d="M 170.71 29.29 A 100 100 0 0 1 170.71 170.71 L 135.36 135.36 A 50 50 0 0 0 135.36 64.64 Z" />
+            <polygon class="arrow-icon" points="180,100 160,86 160,114" />
+          </g>
+
+          <g class="dpad-group" id="btn-down" onclick="move('backward')">
+            <path class="dpad-segment" d="M 170.71 170.71 A 100 100 0 0 1 29.29 170.71 L 64.64 135.36 A 50 50 0 0 0 135.36 135.36 Z" />
+            <polygon class="arrow-icon" points="100,180 86,160 114,160" />
+          </g>
+
+          <g class="dpad-group" id="btn-left" onclick="move('left')">
+            <path class="dpad-segment" d="M 29.29 170.71 A 100 100 0 0 1 29.29 29.29 L 64.64 64.64 A 50 50 0 0 0 64.64 135.36 Z" />
+            <polygon class="arrow-icon" points="20,100 40,114 40,86" />
+          </g>
+
+          <circle class="center-circle" cx="100" cy="100" r="35" />
+        </svg>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const WRITE = "0000ffe3-0000-1000-8000-00805f9b34fb";
+    const NOTIFY = "0000ffe2-0000-1000-8000-00805f9b34fb";
+    const ROBOT_NAME = "ROBOT 3";
+
+    let device;
+    let tx;
+    let rx;
+    let idx = 1;
+    let busy = false;
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    function updateConnectionUI(isConnected) {
+      const connectBtn = document.getElementById("btn-connect");
+      const disconnectBtn = document.getElementById("btn-disconnect");
+
+      if (isConnected) {
+        connectBtn.classList.add("connect-active");
+        disconnectBtn.classList.remove("disconnect-active");
+      } else {
+        connectBtn.classList.remove("connect-active");
+        disconnectBtn.classList.add("disconnect-active");
+        setTimeout(() => {
+          disconnectBtn.classList.remove("disconnect-active");
+        }, 800);
+      }
+    }
+
+    function makeFrame(script, mode = 0) {
+      const code = [...new TextEncoder().encode(script)];
+      const data = [code.length & 255, (code.length >> 8) & 255, ...code];
+      const len = data.length + 4;
+      const lo = idx & 255;
+      const hi = (idx >> 8) & 255;
+      const type = 0x28;
+
+      idx = idx >= 65534 ? 1 : idx + 1;
+
+      const headerCheck = (len + 0xF3) & 255;
+      const checksum = (
+        type + mode + lo + hi +
+        data.reduce((sum, b) => sum + b, 0)
+      ) & 255;
+
+      return new Uint8Array([
+        0xF3, headerCheck,
+        len & 255, (len >> 8) & 255,
+        type, mode, lo, hi,
+        ...data, checksum, 0xF4
+      ]);
+    }
+
+    async function writeFrame(bytes) {
+      for (let i = 0; i < bytes.length; i += 20) {
+        const chunk = bytes.slice(i, i + 20);
+
+        if (tx.properties.writeWithoutResponse &&
+            tx.writeValueWithoutResponse) {
+          await tx.writeValueWithoutResponse(chunk);
+        } else {
+          await tx.writeValue(chunk);
+        }
+
+        await sleep(8);
+      }
+    }
+
+    async function sendPython(code) {
+      await writeFrame(makeFrame(code, 0));
+    }
+
+    async function connectBT() {
+      const status = document.getElementById("status");
+      const output = document.getElementById("cmd-output");
+
+      try {
+        status.textContent = "ابحث عن روبوت 3...";
+
+        // الفلتر المخصص لروبوت 3 لمنع التداخل تماماً
+        device = await navigator.bluetooth.requestDevice({
+          filters: [
+            { name: "Makeblock_LEB0A732B64C36" }
+          ],
+          optionalServices: [
+            "0000ffe0-0000-1000-8000-00805f9b34fb",
+            "0000ffe1-0000-1000-8000-00805f9b34fb",
+            "0000ffe2-0000-1000-8000-00805f9b34fb",
+            "0000ffe3-0000-1000-8000-00805f9b34fb"
+          ]
+        });
+
+        const server = await device.gatt.connect();
+
+        let service;
+        try {
+          service = await server.getPrimaryService("0000ffe0-0000-1000-8000-00805f9b34fb");
+        } catch {
+          service = await server.getPrimaryService("0000ffe1-0000-1000-8000-00805f9b34fb");
+        }
+
+        tx = await service.getCharacteristic(WRITE);
+
+        try {
+          rx = await service.getCharacteristic(NOTIFY);
+          await rx.startNotifications();
+        } catch (e) {
+          rx = null;
+        }
+
+        status.textContent = "جارٍ تهيئة Live Mode...";
+        await writeFrame(new Uint8Array([
+          0xF3, 0xF6, 0x03, 0x00,
+          0x0D, 0x00, 0x01, 0x0E, 0xF4
+        ]));
+
+        await sleep(500);
+
+        await writeFrame(makeFrame("cyberpi.get_bri()", 1));
+        await sleep(500);
+
+        // مسح شاشة CyberPi وكتابة اسم روبوت 3 عند الاتصال
+        await sendPython("cyberpi.console.clear()");
+        await sleep(150);
+        await sendPython(`cyberpi.console.println('${ROBOT_NAME}')`);
+
+        output.textContent = ROBOT_NAME;
+        status.textContent = "متصل بنجاح";
+
+        updateConnectionUI(true);
+
+        device.addEventListener("gattserverdisconnected", () => {
+          tx = null;
+          status.textContent = "انقطع الاتصال";
+          output.textContent = "READY";
+          updateConnectionUI(false);
+        });
+
+      } catch (e) {
+        status.textContent = "خطأ: " + e.message;
+        updateConnectionUI(false);
+      }
+    }
+
+    function disconnectBT() {
+      const status = document.getElementById("status");
+      const output = document.getElementById("cmd-output");
+      if (device && device.gatt.connected) {
+        device.gatt.disconnect();
+      }
+      tx = null;
+      status.textContent = "تم قطع الاتصال";
+      output.textContent = "READY";
+      updateConnectionUI(false);
+    }
+
+    async function move(direction) {
+      const status = document.getElementById("status");
+      const output = document.getElementById("cmd-output");
+
+      if (!tx || !device?.gatt.connected) {
+        status.textContent = "اضغط اتصال بالروبوت أولاً";
+        return;
+      }
+
+      if (busy) return;
+      busy = true;
+
+      try {
+        if (direction === "forward") {
+          await sendPython("mbot2.forward(50)");
+          output.textContent = "FORWARD";
+          status.textContent = "للأمام باستمرار (سرعة 50)";
+        } else if (direction === "backward") {
+          await sendPython("mbot2.backward(50)");
+          output.textContent = "BACKWARD";
+          status.textContent = "للخلف باستمرار (سرعة 50)";
+        } else if (direction === "left") {
+          output.textContent = "TURN LEFT";
+          status.textContent = "انعطاف يسار ثم للأمام";
+          await sendPython("mbot2.turn_left(50)");
+          await sleep(200);
+          await sendPython("mbot2.forward(50)");
+          output.textContent = "FORWARD";
+        } else if (direction === "right") {
+          output.textContent = "TURN RIGHT";
+          status.textContent = "انعطاف يمين ثم للأمام";
+          await sendPython("mbot2.turn_right(50)");
+          await sleep(200);
+          await sendPython("mbot2.forward(50)");
+          output.textContent = "FORWARD";
+        } else if (direction === "stop") {
+          await sendPython("mbot2.EM_stop()");
+          output.textContent = "STOP (A)";
+          status.textContent = "تم إيقاف المحركات";
+        }
+      } catch (e) {
+        status.textContent = "فشل الإرسال: " + e.message;
+      } finally {
+        busy = false;
+      }
+    }
+
+    async function customActionB() {
+      const status = document.getElementById("status");
+      const output = document.getElementById("cmd-output");
+
+      if (!tx || !device?.gatt.connected) {
+        status.textContent = "اضغط اتصال بالروبوت أولاً";
+        return;
+      }
+
+      if (busy) return;
+      busy = true;
+
+      try {
+        output.textContent = "SPIN! 🔄";
+        status.textContent = "جاري تنفيذ الدوران الاستعراضي...";
+        await sendPython("mbot2.drive_speed(60, -60)");
+        await sleep(1000);
+        await sendPython("mbot2.EM_stop()");
+        output.textContent = "READY";
+        status.textContent = "انتهى الدوران الاستعراضي";
+      } catch (e) {
+        status.textContent = "فشل الإرسال: " + e.message;
+      } finally {
+        busy = false;
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp') move('forward');
+      if (e.key === 'ArrowDown') move('backward');
+      if (e.key === 'ArrowLeft') move('left');
+      if (e.key === 'ArrowRight') move('right');
+      if (e.key === 'a' || e.key === 'A') move('stop');
+      if (e.key === 'b' || e.key === 'B') customActionB();
+    });
+  </script>
+</body>
+</html>
